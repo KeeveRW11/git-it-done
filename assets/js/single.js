@@ -1,12 +1,26 @@
 var repoNameEl = document.querySelector("#repo-name");
 var issueContainerEl = document.querySelector("#issues-container");
 var limitWarningEl = document.querySelector("#limit-warning");
+// These are static. They come from the HTML
 
-var getRepoIssues = function(repo) {
-    var apiUrl = "https://api.github.com/repos/" + repo + "/issues?direction=asc";    
-    fetch(apiUrl).then(function(response) {
+var getRepoName = function () {
+    var querryString = document.location.search;
+    var repoName = querryString.split("=")[1];
+    if(repoName) {
+        repoNameEl.textContent = repoName;
+        getRepoIssues(repoName);
+    }
+    else {
+        document.location.replace("./index.html");
+    }    
+}
+
+var getRepoIssues = function(repo) {//my function definition expects the repo parameter. See botton of code.
+    var apiUrl = "https://api.github.com/repos/" + repo + "/issues?direction=asc";    //building the end point dynamically.
+    fetch(apiUrl).then(function(response) { //extract data from one end point
         if (response.ok) {
             response.json().then(function(data) {
+                console.log(data);
                 displayIssues(data);
                 // check if api has paginated issues
                 if (response.headers.get("Link")) {
@@ -15,8 +29,7 @@ var getRepoIssues = function(repo) {
             });
         }
         else {
-            console.log(response);
-            alert("There was a problem with your request!");
+            document.location.replace("./index.html");
         }
   });
 };  
@@ -61,7 +74,7 @@ var displayIssues = function(issues) {
 var displayWarning = function(repo) {
     // add text to warning container
     limitWarningEl.textContent = "To see more than 30 issues, visit ";
-
+    console.log(repo);
     var linkEl = document.createElement("a");
     linkEl.textContent = "See More Issues on GitHub.com";
     linkEl.setAttribute("href", "https://github.com/" + repo + "/issues");
@@ -72,4 +85,5 @@ var displayWarning = function(repo) {
 };
 
 
-getRepoIssues("facebook/react");
+getRepoName();
+//getRepoIssues(getRepoName());
